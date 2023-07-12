@@ -12,34 +12,136 @@
 				</swiper-item>
 			</swiper>
 		</view>
+		<view class="main-bar flex-box">
+			<view class="flex-item" v-for="(item,index) in contentBar" :key="index">
+				<image :src="'../../static/image/index/t_'+(index+1)+'.png'" mode="" class="img"></image>
+				<view class="">
+					{{item.name}}
+				</view>
+			</view>
+		</view>
+		<view class="song-list">
+			<view class="tit-bar">
+				推荐歌单
+				<view class="more fr">
+					歌单广场
+				</view>
+				<scroll-view scroll-x class="scroll-view">
+					<view class="item" v-for="(item,index) in recommendSongs" :key="index">
+						<image :src="item.picUrl" mode="" class="img"></image>
+						<view class="desc ellipsis">
+							{{item.name}}
+						</view>
+						<view class="count">
+							{{item.playCount}}
+						</view>
+					</view>
+				</scroll-view>
+			</view>
+		</view>
+        <!-- 新碟新歌 -->
+        <view class="song-list">
+            <view class="switch-line flex-box">
+				<view class="flex-box">
+					<view class="switch-item" :class="{on : newType == 1}" @click="switchTab(1)">
+						新碟
+					</view>
+					<view class="switch-item" :class="{on : newType == 2}" @click="switchTab(2)">
+						新歌
+					</view>
+				</view>
+                <template v-if="newType == 1">
+                    <view class="more">
+                        更多新碟
+                    </view>
+                </template>
+                <template v-if="newType == 2">
+                    <view class="more">
+                        更多新歌
+                    </view>
+                </template>
+			</view>
+            <scroll-view scroll-x class="scroll-view">
+                <view class="item" v-for="(item,index) in latesAlbum" :key="index">
+                    <image :src="item.picUrl" class="img"></image>
+                    <view class="desc ellipsis">
+                        {{item.name}}
+                    </view>
+                    <view class="desc ellipsis c9">
+                        {{item.artist.name}}
+                    </view>
+                </view>
+            </scroll-view>
+        </view>
 	</view>
 </template>
 
 <script>
-	import getBannerApi from '../../apis/index.js'
+	import {getBannerApi,apiGetRecommendSong,apiGetTopAlbum} from '../../apis/index.js'
 	export default {
 		data() {
 			return {
 				banner: [],
+				contentBar:[ // 主入口
+					{
+						name:'每日推荐',
+					},{
+						name:'歌单',
+					},{
+						name:'排行榜',
+					},{
+						name:'电台',
+					},
+					{
+					name:'直播',
+				}],
+				recommendSongs: [], // 推荐歌单
+                latesAlbum: [], // 新碟新歌
+                newType: 1, // 1-新碟 2-新歌
+                latestTempAlbum: [], // 临时变量
 			}
 		},
 		onLoad() {
 			this.getBanner()
+			this.getRecommend(),
+            this.getLatestAlbum()
 		},
 		methods: {
 			getBanner(){
 				getBannerApi().then(res=>{
-					console.log(res,'res');
+					this.banner = res.banners
 				})
-				// uni.request({
-				// 	url:'http://localhost:3000/banner',
-				// 	method:'GET',
-				// 	success: (res) => {
-				// 		this.banner = res.data.banners
-				// 		console.log(this.banner,'res');
-				// 	}
-				// })
-			}
+			},
+			handleCount(item){
+				if(item >= 10000){
+					return parseInt(item/10000) + 'w'
+				}else{
+					return item
+				}
+			},
+			getRecommend(){
+				apiGetRecommendSong().then(res=>{
+					this.recommendSongs = res.result
+					this.recommendSongs.forEach(item=>{
+						item.playCount = this.handleCount(item.playCount)
+					})
+				})
+			},
+            getLatestAlbum(){
+                apiGetTopAlbum().then(res=>{
+                    this.latestTempAlbum = res.albums
+                    this.latesAlbum = this.latestTempAlbum.slice(0,3)
+                    console.log(res,'res')
+                })
+            },
+            switchTab(val){
+                this.newType = val
+                let temp = {
+                    s: this.newType == 1 ? 0 : 3,
+                    e: this.newType == 1 ? 3 : 6
+                }
+                this.latesAlbum = this.latestTempAlbum.slice(temp.s,temp.e)
+            },
 		}
 	}
 </script>

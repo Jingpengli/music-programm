@@ -1,8 +1,22 @@
 import request from "../utils/request.js"
-import a from '../utils/request.js'
-export default function getBannerApi(){
+export function getBannerApi(data){
 	return request.request({
 	method: 'GET',
 	url: '/banner',
 	})
 }
+
+export function apiGetRecommendSong(data){
+	return request.request({
+	method: 'GET',
+	url: '/personalized',
+	})
+}
+
+export function apiGetTopAlbum(data){
+	return request.request({
+	method: 'GET',
+	url: '/album/newest',
+	})
+}
+

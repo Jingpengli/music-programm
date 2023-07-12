@@ -1,5 +1,8 @@
-let a = '123'
-function fun (){
+let b = 'hh'
+export function a(){
+	return b
+}
+export function fun (){
 	return 'fun'
 }
-export default {fun}
+// export default {fun}
